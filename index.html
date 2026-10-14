@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraPlate — Aesthetic Meal & Diet Planner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            50: '#f4f7f4',
+                            100: '#e5ebe5',
+                            200: '#c8d6c8',
+                            300: '#a3b8a3',
+                            400: '#799479',
+                            500: '#5c755c',
+                            600: '#485d48',
+                            700: '#3a4a3a',
+                            800: '#2f3c2f',
+                            900: '#273127',
+                        },
+                        sand: {
+                            50: '#fbf9f5',
+                            100: '#f5efe6',
+                            200: '#ebdccb',
+                            300: '#dfc7ab',
+                            400: '#d0ad86',
+                            500: '#b89065',
+                            600: '#9e754f',
+                            700: '#7f5e3f',
+                            800: '#694e35',
+                            900: '#57412e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dark .glass-card {
+            background: rgba(31, 41, 31, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .dark .glass-panel {
+            background: rgba(23, 32, 23, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(121, 148, 121, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(121, 148, 121, 0.5);
+        }
+        .pulse-subtle {
+            animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulseSubtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="h-full bg-sand-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 transition-colors duration-500 overflow-x-hidden selection:bg-sage-200 dark:selection:bg-sage-800">
+
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-sage-200/40 dark:bg-sage-900/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/3 -right-32 w-96 h-96 bg-sand-200/50 dark:bg-emerald-950/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-32 left-1/4 w-96 h-96 bg-sage-300/30 dark:bg-zinc-900/40 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="min-h-full flex flex-col">
+        
+        <!-- HEADER -->
+        <header class="sticky top-0 z-40 glass-card border-b border-sand-200/60 dark:border-zinc-800/60 px-4 sm:px-8 py-3.5 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sage-600 to-sage-400 flex items-center justify-center text-white shadow-md shadow-sage-500/20">
+                        <i data-lucide="leaf" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-semibold text-lg tracking-tight bg-gradient-to-r from-sage-700 to-sand-700 dark:from-sage-300 dark:to-sand-300 bg-clip-text text-transparent">AuraPlate</h1>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Mindful Nutrition & Timetable</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs & Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <div class="hidden md:flex items-center bg-sand-100/80 dark:bg-zinc-900/80 p-1 rounded-2xl border border-sand-200/50 dark:border-zinc-800">
+                        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center space-x-2 bg-white dark:bg-zinc-800 text-sage-700 dark:text-sage-300 shadow-sm">
+                            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                            <span>Dashboard</span>
+                        </button>
+                        <button onclick="switchTab('planner')" id="nav-planner" class="px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center space-x-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            <span>Weekly Planner</span>
+                        </button>
+                        <button onclick="switchTab('timetable')" id="nav-timetable" class="px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center space-x-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200">
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                            <span>Time Slots</span>
+                        </button>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-sand-100 dark:hover:bg-zinc-800 transition-colors shadow-sm" aria-label="Toggle theme">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    </button>
+
+                    <!-- Profile / Goal Button -->
+                    <button onclick="openGoalModal()" class="hidden sm:flex items-center space-x-2 px-3.5 py-2 rounded-2xl bg-sage-500 hover:bg-sage-600 text-white text-xs font-medium transition-all shadow-md shadow-sage-500/20">
+                        <i data-lucide="target" class="w-3.5 h-3.5"></i>
+                        <span>Diet Goal</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 pb-24">
+            
+            <!-- Mobile Navigation Bar (Bottom Floating or Top Subbar) -->
+            <div class="flex md:hidden items-center justify-around bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-2xl border border-sand-200 dark:border-zinc-800 mb-6 shadow-sm">
+                <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="flex flex-col items-center py-1.5 px-3 rounded-xl text-sage-600 dark:text-sage-400 font-medium text-[11px]">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 mb-1"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('planner')" id="mob-nav-planner" class="flex flex-col items-center py-1.5 px-3 rounded-xl text-zinc-500 dark:text-zinc-400 font-medium text-[11px]">
+                    <i data-lucide="calendar" class="w-4 h-4 mb-1"></i>
+                    <span>Planner</span>
+                </button>
+                <button onclick="switchTab('timetable')" id="mob-nav-timetable" class="flex flex-col items-center py-1.5 px-3 rounded-xl text-zinc-500 dark:text-zinc-400 font-medium text-[11px]">
+                    <i data-lucide="clock" class="w-4 h-4 mb-1"></i>
+                    <span>Timeline</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="view-dashboard" class="space-y-6">
+                
+                <!-- Welcome Banner & Quick Date Selector -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-0 top-0 translate-x-6 -translate-y-6 w-64 h-64 bg-sage-200/30 dark:bg-sage-900/20 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                        <div>
+                            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-700 dark:text-sage-300 text-xs font-medium mb-3">
+                                <span class="w-2 h-2 rounded-full bg-sage-500 animate-pulse"></span>
+                                <span id="current-day-label">Monday, Oct 14</span>
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Hello, Wellness Seeker ✨</h2>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xl">Nourish your body mindfully today. Keep track of your balanced nutrition and hydration goals effortlessly.</p>
+                        </div>
+                        
+                        <!-- Day Selector Pills -->
+                        <div class="flex items-center space-x-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none" id="dashboard-day-pills">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid Stats & Macro Progress Overview -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Calories & Macros Ring Card -->
+                    <div class="glass-card rounded-3xl p-6 flex flex-col justify-between shadow-sm lg:col-span-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 flex items-center space-x-2">
+                                    <i data-lucide="pie-chart" class="w-4 h-4 text-sage-600"></i>
+                                    <span>Calorie & Macro Budget</span>
+                                </h3>
+                                <button onclick="openGoalModal()" class="text-xs text-sage-600 dark:text-sage-400 hover:underline font-medium">Edit Goal</button>
+                            </div>
+
+                            <!-- Main Calorie Progress Ring / Bar -->
+                            <div class="bg-sand-50/80 dark:bg-zinc-900/60 rounded-2xl p-4 mb-5 border border-sand-200/60 dark:border-zinc-800">
+                                <div class="flex justify-between items-end mb-2">
+                                    <div>
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Consumed</span>
+                                        <div class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50"><span id="stat-consumed-cals">0</span> <span class="text-xs font-normal text-zinc-500">kcal</span></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Goal</span>
+                                        <div class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"><span id="stat-goal-cals">2000</span> kcal</div>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="w-full h-3 bg-sand-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5">
+                                    <div id="calorie-progress-bar" class="h-full bg-gradient-to-r from-sage-500 to-sage-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Macro Breakdown -->
+                        <div class="space-y-3">
+                            <div class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Macro Nutrients</div>
+                            
+                            <!-- Protein -->
+                            <div class="bg-white/60 dark:bg-zinc-900/40 p-3 rounded-2xl border border-sand-200/40 dark:border-zinc-800/80">
+                                <div class="flex justify-between text-xs font-medium mb-1.5">
+                                    <span class="text-zinc-700 dark:text-zinc-300 flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Protein</span></span>
+                                    <span class="text-zinc-600 dark:text-zinc-400"><span id="macro-protein-val">0</span>g / <span id="macro-protein-goal">120</span>g</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-sand-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                    <div id="protein-bar" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Carbs -->
+                            <div class="bg-white/60 dark:bg-zinc-900/40 p-3 rounded-2xl border border-sand-200/40 dark:border-zinc-800/80">
+                                <div class="flex justify-between text-xs font-medium mb-1.5">
+                                    <span class="text-zinc-700 dark:text-zinc-300 flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Carbohydrates</span></span>
+                                    <span class="text-zinc-600 dark:text-zinc-400"><span id="macro-carbs-val">0</span>g / <span id="macro-carbs-goal">200</span>g</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-sand-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                    <div id="carbs-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Fats -->
+                            <div class="bg-white/60 dark:bg-zinc-900/40 p-3 rounded-2xl border border-sand-200/40 dark:border-zinc-800/80">
+                                <div class="flex justify-between text-xs font-medium mb-1.5">
+                                    <span class="text-zinc-700 dark:text-zinc-300 flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span><span>Fats</span></span>
+                                    <span class="text-zinc-600 dark:text-zinc-400"><span id="macro-fats-val">0</span>g / <span id="macro-fats-goal">65</span>g</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-sand-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                    <div id="fats-bar" class="h-full bg-rose-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Today's Meals & Water Tracker -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- Water Intake Tracker Card -->
+                        <div class="glass-card rounded-3xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="p-2 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
+                                        <i data-lucide="droplet" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-sm text-zinc-800 dark:text-zinc-200">Hydration Tracker</h3>
+                                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Target: 2.5 Liters (10 Glasses)</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-lg font-bold text-sky-600 dark:text-sky-400" id="water-count">0</span>
+                                    <span class="text-xs text-zinc-500">/ 10 glasses</span>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Water Drops Container -->
+                            <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 py-2" id="water-drops-container">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Today's Meal Schedule Summary -->
+                        <div class="glass-card rounded-3xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 flex items-center space-x-2">
+                                    <i data-lucide="utensils" class="w-4 h-4 text-sage-600"></i>
+                                    <span>Today's Meal Overview</span>
+                                </h3>
+                                <button onclick="switchTab('planner')" class="text-xs text-sage-600 dark:text-sage-400 hover:underline font-medium flex items-center space-x-1">
+                                    <span>Manage Planner</span>
+                                    <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+
+                            <!-- Meal Cards list for today -->
+                            <div class="space-y-3" id="dashboard-meals-list">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- TAB 2: WEEKLY PLANNER -->
+            <div id="view-planner" class="space-y-6 hidden">
+                
+                <!-- Planner Header & Day Tabs -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                    <div>
+                        <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">Weekly Meal Planner 🗓️</h2>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Plan your breakfasts, lunches, dinners, and healthy snacks for every day of the week.</p>
+                    </div>
+
+                    <!-- Day Selector for Planner -->
+                    <div class="flex items-center space-x-1 overflow-x-auto pb-1 sm:pb-0" id="planner-day-tabs">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Meals Grid for Selected Day -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="planner-meals-grid">
+                    <!-- Populated dynamically -->
+                </div>
+
+            </div>
+
+            <!-- TAB 3: TIMETABLE & TIME SLOTS -->
+            <div id="view-timetable" class="space-y-6 hidden">
+                
+                <!-- Timetable Header -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                    <div>
+                        <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-50">Diet Timetable & Time Slots ⏰</h2>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Stay on track with precise eating windows, hydration alarms, and workout nutrition intervals.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openTimeSlotModal()" class="px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white rounded-2xl text-xs font-medium transition-all shadow-md shadow-sage-500/20 flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Add Time Slot</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Timeline List -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-2.5 sm:before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-sage-200 dark:before:bg-zinc-800" id="timetable-slots-container">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="glass-card border-t border-sand-200/60 dark:border-zinc-800/60 py-6 px-4 text-center text-xs text-zinc-500 dark:text-zinc-400 mt-auto">
+            <p>AuraPlate • Aesthetic Nutrition & Diet Timetable Planner. Crafted with mindful precision.</p>
+        </footer>
+
+    </div>
+
+    <!-- MODAL: ADD / EDIT MEAL -->
+    <div id="meal-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center space-x-2">
+                    <i data-lucide="utensils" class="w-5 h-5 text-sage-600"></i>
+                    <span id="meal-modal-title">Edit Meal</span>
+                </h3>
+                <button onclick="closeMealModal()" class="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form id="meal-form" onsubmit="saveMeal(event)" class="space-y-4">
+                <input type="hidden" id="meal-day">
+                <input type="hidden" id="meal-type">
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Meal Name</label>
+                    <input type="text" id="meal-name-input" required placeholder="e.g. Avocado Toast with Poached Egg" class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Calories (kcal)</label>
+                        <input type="number" id="meal-cals-input" required placeholder="350" class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Time</label>
+                        <input type="text" id="meal-time-input" placeholder="08:00 AM" class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Protein (g)</label>
+                        <input type="number" id="meal-protein-input" placeholder="20" class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Carbs (g)</label>
+                        <input type="number" id="meal-carbs-input" placeholder="30" class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Fats (g)</label>
+                        <input type="number" id="meal-fats-input" placeholder="12" class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Recipe & Nutrition Notes</label>
+                    <textarea id="meal-notes-input" rows="3" placeholder="Add ingredients, recipe instructions, or dietary tags..." class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100 resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeMealModal()" class="px-5 py-2.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-sand-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-medium bg-sage-500 hover:bg-sage-600 text-white transition-all shadow-md shadow-sage-500/20">Save Meal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: GOAL & TARGET SETTINGS -->
+    <div id="goal-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center space-x-2">
+                    <i data-lucide="target" class="w-5 h-5 text-sage-600"></i>
+                    <span>Set Daily Nutrition Goals</span>
+                </h3>
+                <button onclick="closeGoalModal()" class="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveGoals(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Daily Calorie Target (kcal)</label>
+                    <input type="number" id="goal-cals-input" required class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Protein Goal (g)</label>
+                        <input type="number" id="goal-protein-input" required class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Carbs Goal (g)</label>
+                        <input type="number" id="goal-carbs-input" required class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1">Fats Goal (g)</label>
+                        <input type="number" id="goal-fats-input" required class="w-full px-3 py-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeGoalModal()" class="px-5 py-2.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-sand-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-medium bg-sage-500 hover:bg-sage-600 text-white transition-all shadow-md shadow-sage-500/20">Save Goals</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT TIMETABLE SLOT -->
+    <div id="timeslot-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center space-x-2">
+                    <i data-lucide="clock" class="w-5 h-5 text-sage-600"></i>
+                    <span>Add Timetable Slot</span>
+                </h3>
+                <button onclick="closeTimeSlotModal()" class="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveTimeSlot(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Time Interval</label>
+                    <input type="text" id="slot-time-input" required placeholder="07:30 AM - 08:00 AM" class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Activity / Meal Title</label>
+                    <input type="text" id="slot-title-input" required placeholder="Morning Lemon Water & Stretching" class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Description & Guidelines</label>
+                    <textarea id="slot-desc-input" rows="3" placeholder="Drink 500ml lukewarm water, 10 mins light breathwork..." class="w-full px-4 py-3 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-sand-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-sage-500 text-zinc-800 dark:text-zinc-100 resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeTimeSlotModal()" class="px-5 py-2.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-sand-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-medium bg-sage-500 hover:bg-sage-600 text-white transition-all shadow-md shadow-sage-500/20">Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const MEAL_TYPES = [
+            { id: 'breakfast', name: 'Breakfast', icon: 'sunrise', defaultTime: '08:00 AM' },
+            { id: 'lunch', name: 'Lunch', icon: 'sun', defaultTime: '01:00 PM' },
+            { id: 'dinner', name: 'Dinner', icon: 'moon', defaultTime: '07:30 PM' },
+            { id: 'snack', name: 'Healthy Snacks', icon: 'apple', defaultTime: '04:30 PM' }
+        ];
+
+        let currentDay = 'Monday';
+        let currentTab = 'dashboard';
+
+        // Load data from localStorage or use defaults
+        let appData = JSON.parse(localStorage.getItem('auraplate_data')) || {
+            goals: { cals: 2000, protein: 120, carbs: 200, fats: 65 },
+            water: {
+                Monday: 6, Tuesday: 8, Wednesday: 5, Thursday: 7, Friday: 9, Saturday: 4, Sunday: 6
+            },
+            meals: {
+                Monday: {
+                    breakfast: { name: 'Greek Yogurt Berry Parfait', cals: 380, time: '08:00 AM', protein: 22, carbs: 45, fats: 8, notes: 'With organic chia seeds and a drizzle of wildflower honey.' },
+                    lunch: { name: 'Quinoa & Grilled Tofu Salad', cals: 520, time: '01:00 PM', protein: 28, carbs: 55, fats: 18, notes: 'Dressed with cold-pressed olive oil and lemon juice.' },
+                    dinner: { name: 'Baked Salmon with Roasted Asparagus', cals: 610, time: '07:30 PM', protein: 42, carbs: 20, fats: 24, notes: 'Seasoned with garlic herb butter and pink Himalayan salt.' },
+                    snack: { name: 'Handful of Raw Almonds & Green Tea', cals: 210, time: '04:30 PM', protein: 7, carbs: 8, fats: 16, notes: 'Antioxidant rich afternoon booster.' }
+                },
+                Tuesday: {
+                    breakfast: { name: 'Avocado Sourdough Toast & Poached Egg', cals: 410, time: '08:15 AM', protein: 18, carbs: 38, fats: 20, notes: 'Topped with red pepper flakes and microgreens.' },
+                    lunch: { name: 'Mediterranean Chickpea Wrap', cals: 490, time: '12:30 PM', protein: 16, carbs: 62, fats: 14, notes: 'Filled with cucumbers, hummus, and kalamata olives.' },
+                    dinner: { name: 'Herb Roasted Chicken Breast & Sweet Potato', cals: 580, time: '07:00 PM', protein: 45, carbs: 48, fats: 12, notes: 'Served with steamed broccoli florets.' },
+                    snack: { name: 'Greek Yogurt & Blueberries', cals: 180, time: '04:00 PM', protein: 14, carbs: 22, fats: 4, notes: 'High protein afternoon snack.' }
+                },
+                Wednesday: {
+                    breakfast: { name: 'Overnight Chia Oatmeal with Almond Milk', cals: 360, time: '08:00 AM', protein: 12, carbs: 52, fats: 10, notes: 'Soaked overnight with cinnamon and sliced banana.' },
+                    lunch: { name: 'Lentil & Vegetable Soup with Whole Grain Roll', cals: 450, time: '01:00 PM', protein: 22, carbs: 68, fats: 8, notes: 'Hearty and fiber-rich mid-day meal.' },
+                    dinner: { name: 'Grilled Shrimp Bowl with Brown Rice & Avocado', cals: 540, time: '07:30 PM', protein: 38, carbs: 50, fats: 16, notes: 'Lime cilantro vinaigrette dressing.' },
+                    snack: { name: 'Apple Slices with Natural Peanut Butter', cals: 220, time: '04:30 PM', protein: 6, carbs: 28, fats: 10, notes: 'Crisp and satisfying energy boost.' }
+                },
+                Thursday: {
+                    breakfast: { name: 'Spinach & Mushroom Omelette', cals: 390, time: '08:00 AM', protein: 26, carbs: 6, fats: 28, notes: 'Made with organic free-range eggs and feta cheese.' },
+                    lunch: { name: 'Turkey & Avocado Whole Wheat Sandwich', cals: 480, time: '01:15 PM', protein: 32, carbs: 42, fats: 18, notes: 'Served with a side of mixed greens salad.' },
+                    dinner: { name: 'Zucchini Noodles with Turkey Meatballs', cals: 510, time: '07:00 PM', protein: 40, carbs: 24, fats: 22, notes: 'Light alternative to traditional pasta with marinara.' },
+                    snack: { name: 'Mixed Berries & Walnuts', cals: 190, time: '04:00 PM', protein: 5, carbs: 16, fats: 12, notes: 'Brain-boosting omega-3 fatty acids.' }
+                },
+                Friday: {
+                    breakfast: { name: 'Matcha Green Tea Smoothie Bowl', cals: 350, time: '08:30 AM', protein: 15, carbs: 54, fats: 8, notes: 'Blended with spinach, banana, protein powder, and kiwi.' },
+                    lunch: { name: 'Quinoa Buddha Bowl with Tahini Dressing', cals: 530, time: '01:00 PM', protein: 20, carbs: 65, fats: 21, notes: 'Includes roasted chickpeas, sweet potato cubes, and kale.' },
+                    dinner: { name: 'Baked Cod with Lemon Herb Quinoa', cals: 490, time: '07:30 PM', protein: 38, carbs: 40, fats: 14, notes: 'Light, flaky fish rich in lean protein.' },
+                    snack: { name: 'Dark Chocolate Square & Almond Milk', cals: 160, time: '04:30 PM', protein: 3, carbs: 14, fats: 10, notes: '70% dark chocolate for mindful indulgence.' }
+                },
+                Saturday: {
+                    breakfast: { name: 'Pancakes with Fresh Berries & Maple Syrup', cals: 480, time: '09:00 AM', protein: 14, carbs: 75, fats: 12, notes: 'Whole wheat weekend treat.' },
+                    lunch: { name: 'Grilled Veggie & Halloumi Wrap', cals: 560, time: '01:30 PM', protein: 24, carbs: 52, fats: 26, notes: 'Savory grilled halloumi cheese with bell peppers.' },
+                    dinner: { name: 'Lean Beef Stir Fry with Broccoli & Brown Rice', cals: 630, time: '08:00 PM', protein: 44, carbs: 58, fats: 20, notes: 'Low sodium soy sauce and sesame oil aroma.' },
+                    snack: { name: 'Roasted Pumpkin Seeds', cals: 170, time: '04:00 PM', protein: 8, carbs: 4, fats: 14, notes: 'Magnesium and zinc rich crunchy snack.' }
+                },
+                Sunday: {
+                    breakfast: { name: 'Scrambled Eggs on Sourdough with Tomatoes', cals: 420, time: '08:30 AM', protein: 24, carbs: 36, fats: 20, notes: 'Slow-cooked creamy scrambled eggs.' },
+                    lunch: { name: 'Roasted Sweet Potato & Black Bean Salad', cals: 490, time: '01:00 PM', protein: 18, carbs: 72, fats: 12, notes: 'Zesty lime and cilantro dressing.' },
+                    dinner: { name: 'Herb Roasted Vegetable & Tofu Skewers', cals: 520, time: '07:30 PM', protein: 28, carbs: 45, fats: 22, notes: 'Colorful antioxidant-packed skewers.' },
+                    snack: { name: 'Chamomile Tea & Rice Cakes with Honey', cals: 140, time: '05:00 PM', protein: 2, carbs: 30, fats: 2, notes: 'Relaxing evening wind-down snack.' }
+                }
+            },
+            timetable: [
+                { time: '07:00 AM - 07:30 AM', title: 'Morning Hydration & Gentle Stretching', desc: 'Drink 500ml lukewarm water with lemon. 10 mins mindful breathing.' },
+                { time: '08:00 AM - 08:45 AM', title: 'Breakfast & Morning Supplements', desc: 'Enjoy breakfast slowly without screens. Take Omega-3 and Vitamin D3.' },
+                { time: '11:00 AM - 11:15 AM', title: 'Mid-Morning Hydration Break', desc: 'Drink 1 glass of mineral water or green tea.' },
+                { time: '01:00 PM - 01:45 PM', title: 'Mindful Lunch & Post-Meal Walk', desc: 'Balanced nutrition. 15-minute gentle stroll to aid digestion.' },
+                { time: '04:30 PM - 04:45 PM', title: 'Afternoon Snack & Hydration', desc: 'Nutrient-dense snack with herbal tea.' },
+                { time: '07:30 PM - 08:15 PM', title: 'Nourishing Dinner', desc: 'Protein and fiber-rich dinner. No heavy carbs late night.' },
+                { time: '09:30 PM - 10:00 PM', title: 'Digital Sunset & Relaxation', desc: 'Disconnect from screens, sip chamomile tea, prepare for restorative sleep.' }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initTheme();
+            renderDayPills();
+            renderDashboard();
+            renderPlanner();
+            renderTimetable();
+        });
+
+        function saveData() {
+            localStorage.setItem('auraplate_data', JSON.stringify(appData));
+        }
+
+        // Theme Toggle Handler
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('auraplate_theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('auraplate_theme', 'dark');
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('auraplate_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            currentTab = tabId;
+            ['dashboard', 'planner', 'timetable'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                const navBtn = document.getElementById(`nav-${t}`);
+                const mobNavBtn = document.getElementById(`mob-nav-${t}`);
+                
+                if (t === tabId) {
+                    el.classList.remove('hidden');
+                    if (navBtn) {
+                        navBtn.className = "px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center space-x-2 bg-white dark:bg-zinc-800 text-sage-700 dark:text-sage-300 shadow-sm";
+                    }
+                    if (mobNavBtn) {
+                        mobNavBtn.className = "flex flex-col items-center py-1.5 px-3 rounded-xl text-sage-600 dark:text-sage-400 font-medium text-[11px]";
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    if (navBtn) {
+                        navBtn.className = "px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center space-x-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200";
+                    }
+                    if (mobNavBtn) {
+                        mobNavBtn.className = "flex flex-col items-center py-1.5 px-3 rounded-xl text-zinc-500 dark:text-zinc-400 font-medium text-[11px]";
+                    }
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderDayPills() {
+            const containers = [
+                document.getElementById('dashboard-day-pills'),
+                document.getElementById('planner-day-tabs')
+            ];
+
+            containers.forEach(container => {
+                if (!container) return;
+                container.innerHTML = '';
+                DAYS.forEach(day => {
+                    const btn = document.createElement('button');
+                    const isSelected = day === currentDay;
+                    btn.className = `px-3.5 py-2 rounded-2xl text-xs font-medium transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap ${
+                        isSelected 
+                            ? 'bg-sage-500 text-white shadow-md shadow-sage-500/20' 
+                            : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 hover:bg-sand-100 dark:hover:bg-zinc-800 border border-sand-200/60 dark:border-zinc-800'
+                    }`;
+                    btn.innerHTML = `<span>${day}</span>`;
+                    btn.onclick = () => {
+                        currentDay = day;
+                        renderDayPills();
+                        renderDashboard();
+                        renderPlanner();
+                    };
+                    container.appendChild(btn);
+                });
+            });
+
+            const dayLabel = document.getElementById('current-day-label');
+            if (dayLabel) {
+                dayLabel.textContent = `${currentDay} • Nutrition Focus`;
+            }
+        }
+
+        function renderDashboard() {
+            // Calculate totals for currentDay
+            const dayMeals = appData.meals[currentDay] || {};
+            let totalCals = 0;
+            let totalProtein = 0;
+            let totalCarbs = 0;
+            let totalFats = 0;
+
+            Object.values(dayMeals).forEach(m => {
+                if (m) {
+                    totalCals += Number(m.cals) || 0;
+                    totalProtein += Number(m.protein) || 0;
+                    totalCarbs += Number(m.carbs) || 0;
+                    totalFats += Number(m.fats) || 0;
+                }
+            });
+
+            // Update stats
+            document.getElementById('stat-consumed-cals').textContent = totalCals;
+            document.getElementById('stat-goal-cals').textContent = appData.goals.cals;
+            
+            const calPercent = Math.min(100, Math.round((totalCals / appData.goals.cals) * 100));
+            document.getElementById('calorie-progress-bar').style.width = `${calPercent}%`;
+
+            // Macros
+            document.getElementById('macro-protein-val').textContent = totalProtein;
+            document.getElementById('macro-protein-goal').textContent = appData.goals.protein;
+            document.getElementById('protein-bar').style.width = `${Math.min(100, Math.round((totalProtein / appData.goals.protein) * 100))}%`;
+
+            document.getElementById('macro-carbs-val').textContent = totalCarbs;
+            document.getElementById('macro-carbs-goal').textContent = appData.goals.carbs;
+            document.getElementById('carbs-bar').style.width = `${Math.min(100, Math.round((totalCarbs / appData.goals.carbs) * 100))}%`;
+
+            document.getElementById('macro-fats-val').textContent = totalFats;
+            document.getElementById('macro-fats-goal').textContent = appData.goals.fats;
+            document.getElementById('fats-bar').style.width = `${Math.min(100, Math.round((totalFats / appData.goals.fats) * 100))}%`;
+
+            // Water tracker
+            const currentWater = appData.water[currentDay] || 0;
+            document.getElementById('water-count').textContent = currentWater;
+            
+            const waterContainer = document.getElementById('water-drops-container');
+            waterContainer.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const isFilled = i <= currentWater;
+                const dropBtn = document.createElement('button');
+                dropBtn.className = `h-12 rounded-2xl flex items-center justify-center transition-all duration-200 border ${
+                    isFilled 
+                        ? 'bg-sky-500 text-white border-sky-600 shadow-md shadow-sky-500/20' 
+                        : 'bg-white/60 dark:bg-zinc-900/60 text-zinc-300 dark:text-zinc-700 border-sand-200/60 dark:border-zinc-800 hover:border-sky-300'
+                }`;
+                dropBtn.innerHTML = `<i data-lucide="droplet" class="w-4 h-4 ${isFilled ? 'fill-current' : ''}"></i>`;
+                dropBtn.onclick = () => {
+                    appData.water[currentDay] = i === currentWater ? i - 1 : i;
+                    saveData();
+                    renderDashboard();
+                };
+                waterContainer.appendChild(dropBtn);
+            }
+
+            // Dashboard Meals List
+            const dashboardMealsList = document.getElementById('dashboard-meals-list');
+            dashboardMealsList.innerHTML = '';
+
+            MEAL_TYPES.forEach(mt => {
+                const meal = dayMeals[mt.id];
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "bg-white/60 dark:bg-zinc-900/50 p-4 rounded-2xl border border-sand-200/60 dark:border-zinc-800/80 flex items-center justify-between gap-4";
+                
+                itemDiv.innerHTML = `
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 rounded-xl bg-sage-100 dark:bg-sage-900/50 text-sage-600 dark:text-sage-400">
+                            <i data-lucide="${mt.icon}" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-semibold text-xs text-zinc-900 dark:text-zinc-100">${mt.name}</h4>
+                                <span class="text-[10px] text-zinc-400">${meal ? meal.time : mt.defaultTime}</span>
+                            </div>
+                            <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">${meal ? meal.name : 'No meal planned yet'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">${meal ? meal.cals : 0} kcal</span>
+                            <div class="text-[10px] text-zinc-400">P:${meal ? meal.protein : 0} C:${meal ? meal.carbs : 0} F:${meal ? meal.fats : 0}</div>
+                        </div>
+                        <button onclick="openMealModalFor(${currentDay}, '${mt.id}')" class="p-2 rounded-xl bg-sand-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-sage-500 hover:text-white transition-colors">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                dashboardMealsList.appendChild(itemDiv);
+            });
+
+            lucide.createIcons();
+        }
+
+        function renderPlanner() {
+            const grid = document.getElementById('planner-meals-grid');
+            grid.innerHTML = '';
+
+            const dayMeals = appData.meals[currentDay] || {};
+
+            MEAL_TYPES.forEach(mt => {
+                const meal = dayMeals[mt.id];
+                const card = document.createElement('div');
+                card.className = "glass-card rounded-3xl p-6 flex flex-col justify-between shadow-sm relative overflow-hidden";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="p-2.5 rounded-xl bg-sage-100 dark:bg-sage-900/60 text-sage-600 dark:text-sage-400">
+                                    <i data-lucide="${mt.icon}" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">${mt.name}</h3>
+                                    <span class="text-xs text-zinc-500">${meal ? meal.time : mt.defaultTime}</span>
+                                </div>
+                            </div>
+                            <button onclick="openMealModalFor('${currentDay}', '${mt.id}')" class="px-3 py-1.5 rounded-xl bg-sand-100 dark:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-sage-500 hover:text-white transition-colors flex items-center space-x-1">
+                                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                                <span>Edit</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-white/60 dark:bg-zinc-900/50 rounded-2xl p-4 border border-sand-200/60 dark:border-zinc-800/80 mb-4">
+                            <h4 class="font-semibold text-sm text-zinc-800 dark:text-zinc-200 mb-1">${meal ? meal.name : 'Click Edit to add a recipe'}</h4>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 italic">${meal && meal.notes ? meal.notes : 'No recipe notes added yet.'}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-3 border-t border-sand-200/60 dark:border-zinc-800/80 text-xs">
+                        <span class="font-semibold text-sage-600 dark:text-sage-400">${meal ? meal.cals : 0} kcal</span>
+                        <div class="flex space-x-3 text-zinc-500 dark:text-zinc-400">
+                            <span>Protein: <strong class="text-zinc-700 dark:text-zinc-200">${meal ? meal.protein : 0}g</strong></span>
+                            <span>Carbs: <strong class="text-zinc-700 dark:text-zinc-200">${meal ? meal.carbs : 0}g</strong></span>
+                            <span>Fats: <strong class="text-zinc-700 dark:text-zinc-200">${meal ? meal.fats : 0}g</strong></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function renderTimetable() {
+            const container = document.getElementById('timetable-slots-container');
+            container.innerHTML = '';
+
+            appData.timetable.forEach((slot, index) => {
+                const item = document.createElement('div');
+                item.className = "relative flex items-start space-x-4 group";
+                
+                item.innerHTML = `
+                    <div class="absolute -left-6 sm:-left-8 top-1.5 w-4 h-4 rounded-full bg-sage-500 border-4 border-sand-50 dark:border-zinc-950 shadow-sm"></div>
+                    <div class="glass-card rounded-2xl p-4 sm:p-5 flex-1 shadow-sm border border-sand-200/60 dark:border-zinc-800/80">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-bold text-sage-600 dark:text-sage-400 px-2.5 py-1 rounded-full bg-sage-100 dark:bg-sage-900/55">${slot.time}</span>
+                            <button onclick="deleteTimeSlot(${index})" class="text-zinc-400 hover:text-rose-500 transition-colors p-1">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mb-1">${slot.title}</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">${slot.desc}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        function openMealModalFor(day, mealType) {
+            document.getElementById('meal-day').value = day;
+            document.getElementById('meal-type').value = mealType;
+            
+            const meal = appData.meals[day]?.[mealType] || { name: '', cals: '', time: '', protein: '', carbs: '', fats: '', notes: '' };
+            
+            const typeObj = MEAL_TYPES.find(t => t.id === mealType);
+            document.getElementById('meal-modal-title').textContent = `Edit ${typeObj ? typeObj.name : mealType} (${day})`;
+            document.getElementById('meal-name-input').value = meal.name;
+            document.getElementById('meal-cals-input').value = meal.cals;
+            document.getElementById('meal-time-input').value = meal.time || (typeObj ? typeObj.defaultTime : '');
+            document.getElementById('meal-protein-input').value = meal.protein;
+            document.getElementById('meal-carbs-input').value = meal.carbs;
+            document.getElementById('meal-fats-input').value = meal.fats;
+            document.getElementById('meal-notes-input').value = meal.notes;
+
+            document.getElementById('meal-modal').classList.remove('hidden');
+            document.getElementById('meal-modal').classList.add('flex');
+        }
+
+        function closeMealModal() {
+            document.getElementById('meal-modal').classList.remove('flex');
+            document.getElementById('meal-modal').classList.add('hidden');
+        }
+
+        function saveMeal(event) {
+            event.preventDefault();
+            const day = document.getElementById('meal-day').value;
+            const type = document.getElementById('meal-type').value;
+
+            if (!appData.meals[day]) appData.meals[day] = {};
+
+            appData.meals[day][type] = {
+                name: document.getElementById('meal-name-input').value,
+                cals: Number(document.getElementById('meal-cals-input').value),
+                time: document.getElementById('meal-time-input').value,
+                protein: Number(document.getElementById('meal-protein-input').value) || 0,
+                carbs: Number(document.getElementById('meal-carbs-input').value) || 0,
+                fats: Number(document.getElementById('meal-fats-input').value) || 0,
+                notes: document.getElementById('meal-notes-input').value
+            };
+
+            saveData();
+            closeMealModal();
+            renderDashboard();
+            renderPlanner();
+        }
+
+        function openGoalModal() {
+            document.getElementById('goal-cals-input').value = appData.goals.cals;
+            document.getElementById('goal-protein-input').value = appData.goals.protein;
+            document.getElementById('goal-carbs-input').value = appData.goals.carbs;
+            document.getElementById('goal-fats-input').value = appData.goals.fats;
+
+            document.getElementById('goal-modal').classList.remove('hidden');
+            document.getElementById('goal-modal').classList.add('flex');
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goal-modal').classList.remove('flex');
+            document.getElementById('goal-modal').classList.add('hidden');
+        }
+
+        function saveGoals(event) {
+            event.preventDefault();
+            appData.goals = {
+                cals: Number(document.getElementById('goal-cals-input').value),
+                protein: Number(document.getElementById('goal-protein-input').value),
+                carbs: Number(document.getElementById('goal-carbs-input').value),
+                fats: Number(document.getElementById('goal-fats-input').value)
+            };
+
+            saveData();
+            closeGoalModal();
+            renderDashboard();
+        }
+
+        function openTimeSlotModal() {
+            document.getElementById('slot-time-input').value = '';
+            document.getElementById('slot-title-input').value = '';
+            document.getElementById('slot-desc-input').value = '';
+
+            document.getElementById('timeslot-modal').classList.remove('hidden');
+            document.getElementById('timeslot-modal').classList.add('flex');
+        }
+
+        function closeTimeSlotModal() {
+            document.getElementById('timeslot-modal').classList.remove('flex');
+            document.getElementById('timeslot-modal').classList.add('hidden');
+        }
+
+        function saveTimeSlot(event) {
+            event.preventDefault();
+            const newSlot = {
+                time: document.getElementById('slot-time-input').value,
+                title: document.getElementById('slot-title-input').value,
+                desc: document.getElementById('slot-desc-input').value
+            };
+
+            appData.timetable.push(newSlot);
+            saveData();
+            closeTimeSlotModal();
+            renderTimetable();
+        }
+
+        function deleteTimeSlot(index) {
+            appData.timetable.splice(index, 1);
+            saveData();
+            renderTimetable();
+        }
+    </script>
+</body>
+</html>
